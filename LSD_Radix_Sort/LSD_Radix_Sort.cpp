@@ -1,13 +1,23 @@
 ﻿
 #include <iostream>
+#include <fstream>
+#include<iomanip>
+#include <random>
+
 using namespace std;
 int count_of_operation = 0;
 
+std::random_device rd; // Источник энтропии.
+std::mt19937 generator(rd()); // Генератор случайных чисел.
 
-void Random(int A[], size_t n) {
-	srand(unsigned(time(NULL)));
+
+void Random(int A[], int n, int min, int max) {
+	
+	// (Здесь берется одно инициализирующее значение, можно брать больше)
+
+	std::uniform_int_distribution<> distribution(min, max); // Равномерное распределение
 	for (int i = 0; i < n; i++) {
-		A[i] = rand() % 999 + 1;
+		A[i] = distribution(generator);
 	}
 }
 
@@ -72,22 +82,41 @@ void radixsort(int arr[], int n)
 
 int main()
 {
-	int n;
-	cout << "\nEnter the number of data element to be sorted: ";
-	cin >> n;
+	int n = 10000;
+
+
+	fstream outFile1;
+	outFile1.open("result_change_n.txt", std::ios::out);
+	fstream outFile2;
+	outFile2.open("result_change_m.txt", std::ios::out);
+	
+	// Изменяем количество входных данных и фиксируем длину чисел
+	for (int i = 2; i <= 10000; i++)
+	{
+		int* arr = new int[i];
+		Random(arr, i, 100, 999);
+		radixsort(arr, i);
+
+		outFile1 << count_of_operation << " ";
+		count_of_operation = 0;
+		delete[] arr;
+	}
+
+	// Изменяем максимальное количетсво разрядов
 
 	int* arr = new int[n];
-
-	Random(arr, n);
-
-	radixsort(arr, n);
-
-	cout << count_of_operation;
-
-	// Printing the sorted data.
-	/*cout << "\nSorted Data ";
-	for (i = 0; i < n; i++)
-		cout << "->" << arr[i];*/
+	for (int i = 1; i <= 8; i++)
+	{
+		
+		Random(arr, n, int(pow(10, i-1)), int(pow(10,i)-1));
+		radixsort(arr, n);
+		
+		outFile2 << count_of_operation << " ";
+		count_of_operation = 0;
+	}
+	delete[] arr;
+	outFile1.close();
+	outFile2.close();
 	return 0;
 }
 
